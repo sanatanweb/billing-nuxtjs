@@ -3,8 +3,8 @@ import colors from 'vuetify/es5/util/colors'
 export default {
   // Global page headers (https://go.nuxtjs.dev/config-head)
   head: {
-    titleTemplate: '%s - billing-frontend',
-    title: 'billing-frontend',
+    titleTemplate: '%s - billing-nuxtjs',
+    title: 'billing-nuxtjs',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
@@ -36,10 +36,14 @@ export default {
   modules: [
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
+    '@nuxtjs/auth'
   ],
 
   // Axios module configuration (https://go.nuxtjs.dev/config-axios)
-  axios: {},
+  axios: {
+    baseURL: 'http://localhost:8000/api/',
+    credentials: true, // this says that in the request the httponly cookie should be sent
+  },
 
   // Vuetify module configuration (https://go.nuxtjs.dev/config-vuetify)
   vuetify: {
@@ -62,5 +66,22 @@ export default {
 
   // Build Configuration (https://go.nuxtjs.dev/config-build)
   build: {
-  }
+  },
+
+  // Auth module configuration
+  auth: {
+    strategies: {
+      local: {
+        endpoints: {
+          login: { url: 'login', method: 'post' , propertyName: 'access_token'},
+          logout: { url: 'logout', method: 'post' },
+          user:  { url: 'v1/item', method: 'get', propertyName: false, withCredentials: true, }
+        },
+        tokenRequired: true,
+        tokenName: 'Authorization',
+        tokenType: 'Bearer'
+      }
+    },
+    localStorage: false
+  },
 }

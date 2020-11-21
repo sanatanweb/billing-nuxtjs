@@ -8,8 +8,7 @@
                 <v-card-text>
                     <v-text-field 
                         label="Email" 
-                        v-model="userName"
-                        name="email"
+                        v-model="email"
                         prepend-icon="mdi-account-circle" 
                     />
                 </v-card-text>
@@ -17,7 +16,6 @@
                     <v-text-field 
                         :type="showPassword ? 'text': 'password'" 
                         label="Password" 
-                        name="password"
                         v-model="password"
                         prepend-icon="mdi-account-lock" 
                         :append-icon="showPassword ? 'mdi-eye': 'mdi-eye-off'" 
@@ -25,7 +23,12 @@
                     />
                 </v-card-text>
                 <v-card-text>
-                    <v-btn type="submit" color="info">Login</v-btn>
+                    <v-btn 
+                        v-on:click="login()" 
+                        color="info"
+                    >
+                        Login
+                    </v-btn>
                 </v-card-text>
             </v-card>
         </v-col>
@@ -33,18 +36,33 @@
 </template>
 <script>
 export default {
-    mounted() {
-        console.log(this.csrf)
-    },
-    props: ['csrf'],
     data() {
         return {
-            userName: null,
+            email: null,
             password: null,
             showPassword: false
         }
-    }
+    },
 
+    methods: {
+        async login() {
+            try {
+                // Pass data to loginWith function
+                await this.$auth.loginWith('local', { data: {
+                            email: this.email,
+                            password: this.password
+                        } 
+                    });
+
+                // Redirect user after login
+                this.$router.push({
+                    path: '/app',
+                });
+            } catch (err) {
+                console.log(err)
+            }
+      },
+    }
 }
 </script>
 <style scoped>
