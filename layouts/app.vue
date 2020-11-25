@@ -6,6 +6,10 @@
             <v-toolbar-title>
                 S-Clinic
             </v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-btn icon @click="logout">
+                <v-icon>mdi-logout</v-icon>
+            </v-btn>
         </v-app-bar>
         <!-- Navigation Drawer: Sidebar -->
         <v-navigation-drawer 
@@ -67,6 +71,12 @@ export default {
           { title: 'Reports', icon: 'mdi-printer-check', to: '/app/report' },
         ],
       }
+    },
+
+    methods: {
+        async logout() {
+            await this.$auth.logout();
+        },
     }
 }
 </script>
