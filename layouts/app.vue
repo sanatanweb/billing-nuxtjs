@@ -1,7 +1,7 @@
 <template>
     <v-app>
         <!-- App Bar -->
-        <v-app-bar color="primary" app dark>
+        <v-app-bar color="primary" app>
             <v-app-bar-nav-icon @click="drawer = true" />
             <v-toolbar-title>
                 S-Clinic
@@ -61,16 +61,15 @@
 <script>
 export default {
     data() {
-      return {
-        drawer: false,
-        items: [
-          { title: 'Dashboard', icon: 'mdi-view-dashboard', to: '/app' },
-          { title: 'Invoice', icon: 'mdi-inbox-full', to: '/app/invoice' },
-          { title: 'Patients', icon: 'mdi-account-multiple', to: '/app/patient' },
-          { title: 'Items', icon: 'mdi-sitemap', to: '/app/item' },
-          { title: 'Reports', icon: 'mdi-printer-check', to: '/app/report' },
-        ],
-      }
+        return {
+            drawer: false,
+            items: [
+                { title: 'Dashboard', icon: 'mdi-view-dashboard', to: '/app' },
+                { title: 'Customers', icon: 'mdi-account-multiple', to: '/app/customer' },
+                { title: 'Items', icon: 'mdi-sitemap', to: '/app/item' },
+                { title: 'Invoice', icon: 'mdi-inbox-full', to: '/app/invoice' },
+            ],
+        }
     },
 
     methods: {
