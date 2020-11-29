@@ -35,7 +35,7 @@
                 <v-list-item
                     v-for="(item, i) in items"
                     :key="i"
-                    router
+                    nuxt
                     :to="item.to"
                 >
                     <v-list-item-icon>

@@ -1,12 +1,11 @@
 <template>
-    <div>
-        Dashboard
-    </div>
+<div>
+    Invoice
+</div>
 </template>
-
 <script>
 export default {
     layout: 'app',
-    middleware: 'auth',
+    middleware: 'auth'
 }
 </script>

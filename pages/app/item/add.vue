@@ -19,7 +19,7 @@
                             />
                         </v-radio-group>
                     </v-col>
-                    <v-col cols="9" sm="9" md="9">
+                    <v-col cols="6" sm="6" md="6">
                         <v-text-field 
                             label="Name" 
                             v-model="item.name" 
@@ -37,10 +37,12 @@
                             v-model="item.selling_price" 
                         />
                     </v-col>
-                    <v-col cols="12" sm="12" md="12">
+                    <v-col cols="9" sm="9" md="9">
                         <v-textarea
                             label="Description"
                             v-model="item.description"
+                            auto-grow
+                            rows="1"
                         />
                 </v-col>
                 </v-row>
