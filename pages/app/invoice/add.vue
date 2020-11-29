@@ -1,87 +1,225 @@
 <template>
-<div>
-    <v-simple-table dense>
-        <thead>
-            <tr>
-                <th class="text-left">Item details</th>
-                <th class="text-left">Quantity</th>
-                <th class="text-left">Rate</th>
-                <th class="text-left">Discount</th>
-                <th class="text-left">Amount</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr 
-                v-for="(item, i) in invoiceItems" 
-                :key="i">
-                <td>
-                    <v-text-field
-                        label="Item detail"
-                        single-line
-                    ></v-text-field>
-                </td>
-                <td>
-                    <v-text-field
-                        label="Quantity"
-                        v-model="item.quantity"
-                        single-line
-                    ></v-text-field>
-                </td>
-                <td>
-                    <v-text-field
-                        label="Rate"
-                        v-model="item.rate"
-                        single-line
-                    ></v-text-field>
-                    </td>
-                <td>
-                    <v-text-field
-                        label="Discount"
-                        v-model="item.discount"
-                        single-line
-                    ></v-text-field>
-                </td>
-                <td>{{ item.quantity*item.rate }}</td>
-                <td>
-                    <v-btn fab x-small @click="deleteLine(item)">
-                        <v-icon color="red">mdi-trash-can-outline</v-icon>
-                    </v-btn>
-                </td>
-            </tr>
-        </tbody>
-    </v-simple-table>
-    <v-col cols="12" sm="3">
-        <v-btn fab x-small color="green" @click="addNewLine">
-            <v-icon color="white">mdi-plus</v-icon>
-        </v-btn>
-    </v-col>
-</div>
+    <v-card>
+        <v-card-title class="headline" primary-title>
+            {{ formTitle }}
+        </v-card-title>
+        <v-card-text>
+            <v-container>
+                <v-row>
+                    <v-col cols="9" sm="9">
+                        <v-text-field 
+                            label="Customer name"
+                        />
+                    </v-col>
+                    <v-col cols="3" sm="3">
+                        <v-menu
+                            ref="menu"
+                            v-model="menu"
+                            :close-on-content-click="false"
+                            :return-value.sync="date"
+                            transition="scale-transition"
+                            offset-y
+                            min-width="290px"
+                        >
+                            <template v-slot:activator="{ on, attrs }">
+                                <v-text-field
+                                    v-model="date"
+                                    label="Invoice date"
+                                    prepend-icon="mdi-calendar"
+                                    readonly
+                                    v-bind="attrs"
+                                    v-on="on"
+                                />
+                            </template>
+                            <v-date-picker
+                                v-model="date"
+                                no-title
+                                scrollable
+                            >
+                            <v-spacer />
+                            <v-btn
+                                text
+                                color="primary"
+                                @click="menu = false"
+                            >
+                                Cancel
+                            </v-btn>
+                            <v-btn
+                                text
+                                color="primary"
+                                @click="$refs.menu.save(date)"
+                            >
+                                OK
+                            </v-btn>
+                            </v-date-picker>
+                        </v-menu>
+                    </v-col>
+                    <v-col cols="12" sm="12">
+                        <v-simple-table dense>
+                            <thead>
+                                <tr>
+                                    <th class="text-left" width="40%">Item details</th>
+                                    <th class="text-left" width="10%">Qty</th>
+                                    <th class="text-left" width="15%">Rate</th>
+                                    <th class="text-left" width="15%" colspan="2">Discount</th>
+                                    <th class="text-left">Amount</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr 
+                                    v-for="(item, i) in invoiceItems" 
+                                    :key="i"
+                                >
+                                    <td width="40%">
+                                        <v-text-field
+                                            label="Item name"
+                                            single-line
+                                        />
+                                    </td>
+                                    <td width="10%">
+                                        <v-text-field
+                                            label="Qty"
+                                            v-model="item.quantity"
+                                            single-line
+                                        />
+                                    </td>
+                                    <td width="15%">
+                                        <v-text-field
+                                            label="Rate"
+                                            v-model="item.rate"
+                                            single-line
+                                        />
+                                    </td>
+                                    <td width="10%">
+                                        <v-text-field
+                                            label="Discount"
+                                            v-model="item.discount"
+                                            single-line
+                                        />
+                                    </td>
+                                    <td width="5%">
+                                        <v-select
+                                            :items="discountType"
+                                            :value="item.discount_type"
+                                        />
+                                    </td>
+                                    <td>
+                                        {{ item.quantity*item.rate }}
+                                    </td>
+                                    <td>
+                                        <v-btn fab x-small @click="deleteLine(item)">
+                                            <v-icon color="red">mdi-trash-can-outline</v-icon>
+                                        </v-btn>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </v-simple-table>
+                        <v-btn fab x-small color="green" @click="addNewLine">
+                            <v-icon color="white">mdi-plus</v-icon>
+                        </v-btn>
+                    </v-col>
+                </v-row>
+                <v-row>
+                    <v-spacer />
+                    <v-col cols="4">
+                        <v-simple-table dense>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        Sub Total
+                                    </td>
+                                    <td>
+                                        {{ subTotal }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        VAT Amount
+                                    </td>
+                                    <td>
+                                        {{ vatAmount }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Total
+                                    </td>
+                                    <td>
+                                        {{ total }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </v-simple-table>
+                    </v-col>
+                </v-row>
+                <v-row>
+                    <v-col  cols="6">  
+                        <v-textarea
+                            label="Amount in words"
+                            auto-grow
+                            rows="1"
+                        />
+                    </v-col>
+                    <v-col  cols="6">  
+                        <v-textarea
+                            label="Remarks"
+                            auto-grow
+                            rows="1"
+                        />
+                    </v-col>
+                    <v-col cols="4">
+                        <v-select
+                            :items="invoiceStatus"
+                            label="Invoice Status"
+                        />
+                    </v-col>
+                </v-row>
+            </v-container>
+        </v-card-text>
+        <v-card-actions>
+            <v-spacer />
+            <v-btn color="green darken-1" @click="create">
+                Save
+                </v-btn>
+            <v-btn color="red" @click="reset">
+                Reset
+            </v-btn>
+        </v-card-actions>
+    </v-card>
 </template>
+
 <script>
 export default {
     layout: 'app',
     middleware: 'auth',
     data () {
         return {
-            invoice_total: 0,
+            subTotal: 0,
+            vatAmount: 0,
+            total: 0,
             invoiceItems: [{
                 items_details: '',
-                quantity: '',
-                rate: '',
-                discount: '',
-                discount_type:''
+                quantity: 1,
+                rate: 0,
+                discount: 0,
+                discount_type:'%'
             }],
+            invoiceStatus: ['Draft','Sent','Partial','Paid','Cancelled'],
+            discountType: ['%','Amt'],
+            formTitle: 'Create Invoice'
          }
     },
 
     methods:{
+
         addNewLine() {
             this.invoiceItems.push({
                 items_details: '',
-                quantity: '',
-                rate: '',
-                discount: '',
+                quantity: 1,
+                rate: 0,
+                discount: 0,
+                discount_type:'%'
             });
         },
 
