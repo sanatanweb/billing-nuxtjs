@@ -6,7 +6,7 @@
             <v-toolbar-title>
                 S-Clinic
             </v-toolbar-title>
-            <v-spacer></v-spacer>
+            <v-spacer />
             <v-btn icon @click="logout">
                 <v-icon>mdi-logout</v-icon>
             </v-btn>

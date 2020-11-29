@@ -1,7 +1,7 @@
 <template>
     <v-card>
         <v-card-title class="headline" primary-title>
-        {{ formTitle }}
+            {{ formTitle }}
         </v-card-title>
         <v-card-text>
             <v-container>
@@ -61,6 +61,7 @@
 <script>
 export default {
     layout: 'app',
+    middleware: 'auth',
 
     data() {
         return {
