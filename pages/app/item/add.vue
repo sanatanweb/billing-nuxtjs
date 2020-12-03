@@ -5,7 +5,14 @@
         </v-card-title>
         <v-card-text>
             <v-container>
-                <v-row>  
+                <v-row>
+                    <v-col cols="12" sm="12" md="12" v-if="validationErrors">
+                        <div v-for="(value, key) in validationErrors" :key="key">
+                            <v-alert type="error" v-for="error in value" :key="error" class="text-sm">
+                                {{ error }}
+                            </v-alert>
+                        </div>
+                    </v-col>
                     <v-col cols="3" sm="3" md="3">
                         <v-radio-group v-model="item.type" row>
                             <v-label>Type</v-label>
@@ -74,7 +81,8 @@ export default {
                 selling_price: null,
                 description: null,
             },
-            formTitle: 'Add Item'
+            formTitle: 'Add Item',
+            validationErrors: ''
         }
     },
 
@@ -84,7 +92,9 @@ export default {
                 .then(response => {
                     this.reset();
                 }).catch(error => {
-                    console.log(error);
+                    if (error.response.status == 422) {
+                        this.validationErrors = error.response.data.errors;
+                    }
                 });
         },
 
