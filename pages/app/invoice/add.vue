@@ -7,8 +7,12 @@
             <v-container>
                 <v-row>
                     <v-col cols="9" sm="9">
-                        <v-text-field 
-                            label="Customer name"
+                        <v-select
+                            v-model="invoice.customer_id"
+                            :items="customers"
+                            item-text="customer_display_name"
+                            item-value="id"
+                            label="Customer name" 
                         />
                     </v-col>
                     <v-col cols="3" sm="3">
@@ -16,14 +20,14 @@
                             ref="menu"
                             v-model="menu"
                             :close-on-content-click="false"
-                            :return-value.sync="date"
+                            :return-value.sync="invoice.invoice_date"
                             transition="scale-transition"
                             offset-y
                             min-width="290px"
                         >
                             <template v-slot:activator="{ on, attrs }">
                                 <v-text-field
-                                    v-model="date"
+                                    v-model="invoice.invoice_date"
                                     label="Invoice date"
                                     prepend-icon="mdi-calendar"
                                     readonly
@@ -32,7 +36,7 @@
                                 />
                             </template>
                             <v-date-picker
-                                v-model="date"
+                                v-model="invoice.invoice_date"
                                 no-title
                                 scrollable
                             >
@@ -72,9 +76,12 @@
                                     :key="i"
                                 >
                                     <td width="40%">
-                                        <v-text-field
-                                            label="Item name"
-                                            single-line
+                                        <v-select
+                                            v-model="item.item_id"
+                                            :items="items"
+                                            item-text="name"
+                                            item-value="id"
+                                            label="Item name" 
                                         />
                                     </td>
                                     <td width="10%">
@@ -115,7 +122,12 @@
                                 </tr>
                             </tbody>
                         </v-simple-table>
-                        <v-btn fab x-small color="green" @click="addNewLine">
+                        <v-btn 
+                            fab 
+                            x-small 
+                            color="green" 
+                            @click="addNewLine"
+                        >
                             <v-icon color="white">mdi-plus</v-icon>
                         </v-btn>
                     </v-col>
@@ -130,7 +142,7 @@
                                         Sub Total
                                     </td>
                                     <td>
-                                        {{ subTotal }}
+                                        {{ invoice.sub_total }}
                                     </td>
                                 </tr>
                                 <tr>
@@ -138,7 +150,7 @@
                                         VAT Amount
                                     </td>
                                     <td>
-                                        {{ vatAmount }}
+                                        {{ invoice.vat_amount }}
                                     </td>
                                 </tr>
                                 <tr>
@@ -146,7 +158,7 @@
                                         Total
                                     </td>
                                     <td>
-                                        {{ total }}
+                                        {{ invoice.total }}
                                     </td>
                                 </tr>
                             </tbody>
@@ -170,6 +182,7 @@
                     </v-col>
                     <v-col cols="4">
                         <v-select
+                            v-model="invoice.status"
                             :items="invoiceStatus"
                             label="Invoice Status"
                         />
@@ -179,10 +192,13 @@
         </v-card-text>
         <v-card-actions>
             <v-spacer />
-            <v-btn color="green darken-1" @click="create">
+            <v-btn 
+                @click="save"
+                color="green darken-1"
+            >
                 Save
-                </v-btn>
-            <v-btn color="red" @click="reset">
+            </v-btn>
+            <v-btn color="red">
                 Reset
             </v-btn>
         </v-card-actions>
@@ -195,27 +211,54 @@ export default {
     middleware: 'auth',
     data () {
         return {
-            subTotal: 0,
-            vatAmount: 0,
-            total: 0,
+            menu: null,
+            customers: [],
+            items: [],
+            invoice: {
+                customer_id: null,
+                invoice_date: null,
+                sub_total: 0,
+                vat_amount: 0,
+                total: 0,
+                status: 'Draft'
+            },
+
             invoiceItems: [{
-                items_details: '',
+                item_id: null,
                 quantity: 1,
                 rate: 0,
                 discount: 0,
-                discount_type:'%'
+                discount_type: '%'
             }],
+
             invoiceStatus: ['Draft','Sent','Partial','Paid','Cancelled'],
             discountType: ['%','Amt'],
             formTitle: 'Create Invoice'
          }
     },
 
+    mounted() {
+        this.getCustomers();
+        this.getItems();
+    },
+
     methods:{
+
+        getCustomers() {
+            this.$axios.get("v1/customer")
+                .then(response => this.customers = response.data.data)
+                .catch(error => console.log(error));
+        },
+
+        getItems() {
+            this.$axios.get("v1/item")
+                .then(response => this.items = response.data.data)
+                .catch(error => console.log(error));
+        },
 
         addNewLine() {
             this.invoiceItems.push({
-                items_details: '',
+                item_id: null,
                 quantity: 1,
                 rate: 0,
                 discount: 0,
@@ -255,6 +298,18 @@ export default {
             const index = this.invoiceItems.indexOf(item);
             this.invoiceItems.splice(index, 1);
         },
+
+        save() {
+            this.$axios.post("v1/invoice", 
+                {
+                    'invoice':this.invoice,
+                    'invoice_items':this.invoiceItems,
+                })
+                .then(response => {
+                }).catch(error => {
+                    console.log(error);
+                });
+        }
     }
 }
 </script>
