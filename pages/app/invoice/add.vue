@@ -40,21 +40,21 @@
                                 no-title
                                 scrollable
                             >
-                            <v-spacer />
-                            <v-btn
-                                text
-                                color="primary"
-                                @click="menu = false"
-                            >
-                                Cancel
-                            </v-btn>
-                            <v-btn
-                                text
-                                color="primary"
-                                @click="$refs.menu.save(date)"
-                            >
-                                OK
-                            </v-btn>
+                                <v-spacer />
+                                <v-btn
+                                    text
+                                    color="primary"
+                                    @click="menu = false"
+                                >
+                                    Cancel
+                                </v-btn>
+                                <v-btn
+                                    text
+                                    color="primary"
+                                    @click="$refs.menu.save(date)"
+                                >
+                                    OK
+                                </v-btn>
                             </v-date-picker>
                         </v-menu>
                     </v-col>
@@ -81,13 +81,16 @@
                                             :items="items"
                                             item-text="name"
                                             item-value="id"
-                                            label="Item name" 
+                                            label="Item name"
+                                            return-object
+                                            @change="changeItem(item, $event)" 
                                         />
                                     </td>
                                     <td width="10%">
                                         <v-text-field
                                             label="Qty"
                                             v-model="item.quantity"
+                                            @change="changeOnInvoiceItem(item)"
                                             single-line
                                         />
                                     </td>
@@ -102,6 +105,7 @@
                                         <v-text-field
                                             label="Discount"
                                             v-model="item.discount"
+                                            @change="changeOnInvoiceItem(item)"
                                             single-line
                                         />
                                     </td>
@@ -109,10 +113,12 @@
                                         <v-select
                                             :items="discountType"
                                             :value="item.discount_type"
+                                            v-model="item.discount_type"
+                                            @change="changeOnInvoiceItem(item)"
                                         />
                                     </td>
                                     <td>
-                                        {{ item.quantity*item.rate }}
+                                        {{ item.total }}
                                     </td>
                                     <td>
                                         <v-btn fab x-small @click="deleteLine(item)">
@@ -211,7 +217,8 @@ export default {
     middleware: 'auth',
     data () {
         return {
-            menu: null,
+            date: new Date().toISOString().substr(0, 10),
+            menu: false,
             customers: [],
             items: [],
             invoice: {
@@ -228,7 +235,8 @@ export default {
                 quantity: 1,
                 rate: 0,
                 discount: 0,
-                discount_type: '%'
+                discount_type: '%',
+                total: 0
             }],
 
             invoiceStatus: ['Draft','Sent','Partial','Paid','Cancelled'],
@@ -256,42 +264,51 @@ export default {
                 .catch(error => console.log(error));
         },
 
+        changeItem(item, event) {
+            const index = this.invoiceItems.indexOf(item);
+            this.invoiceItems[index].rate = event.selling_price;
+            this.invoiceItems[index].total = this.invoiceItems[index].rate*this.invoiceItems[index].quantity;
+            this.calculateInvoiceTotal();
+        },
+
+        changeOnInvoiceItem(item) {
+            const index = this.invoiceItems.indexOf(item);
+            var itemRate = this.invoiceItems[index].rate;
+            var itemQuantity = this.invoiceItems[index].quantity;
+            var itemSubTotal = itemRate*itemQuantity;
+            var itemDiscount = this.invoiceItems[index].discount;
+            var itemDiscountType = this.invoiceItems[index].discount_type;
+
+            if (itemDiscountType == '%') {
+                var discountAmount = itemSubTotal*itemDiscount/100;
+            } else {
+                var discountAmount = itemDiscount;
+            }
+
+            this.invoiceItems[index].total = itemSubTotal-discountAmount;
+            
+            this.calculateInvoiceTotal();
+        },
+
+        calculateInvoiceTotal() {
+            var invoiceSubTotal = 0;
+            for (let ind = 0; ind < this.invoiceItems.length; ind++) {
+                var total = this.invoiceItems[ind].total;
+                invoiceSubTotal += total;   
+            }
+            this.invoice.sub_total = invoiceSubTotal;
+            this.invoice.total = invoiceSubTotal;
+        },
+
         addNewLine() {
             this.invoiceItems.push({
                 item_id: null,
                 quantity: 1,
                 rate: 0,
                 discount: 0,
-                discount_type:'%'
+                discount_type:'%',
+                total: 0
             });
-        },
-
-        calculateTotal() {
-            var subtotal, total;
-            subtotal = this.invoice_products.reduce(function (sum, product) {
-                var lineTotal = parseFloat(product.line_total);
-                if (!isNaN(lineTotal)) {
-                    return sum + lineTotal;
-                }
-            }, 0);
-
-            this.invoice_subtotal = subtotal.toFixed(2);
-
-            total = (subtotal * (this.invoice_tax / 100)) + subtotal;
-            total = parseFloat(total);
-            if (!isNaN(total)) {
-                this.invoice_total = total.toFixed(2);
-            } else {
-                this.invoice_total = '0.00'
-            }
-        },
-
-        calculateLineTotal(invoice_product) {
-            var total = parseFloat(invoice_product.product_price) * parseFloat(invoice_product.product_qty);
-            if (!isNaN(total)) {
-                invoice_product.line_total = total.toFixed(2);
-            }
-            this.calculateTotal();
         },
 
         deleteLine(item) {
@@ -300,8 +317,7 @@ export default {
         },
 
         save() {
-            this.$axios.post("v1/invoice", 
-                {
+            this.$axios.post("v1/invoice", {
                     'invoice':this.invoice,
                     'invoice_items':this.invoiceItems,
                 })
