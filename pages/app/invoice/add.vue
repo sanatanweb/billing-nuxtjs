@@ -6,6 +6,13 @@
         <v-card-text>
             <v-container>
                 <v-row>
+                    <v-col cols="12" sm="12" md="12" v-if="validationErrors">
+                        <div v-for="(value, key) in validationErrors" :key="key">
+                            <v-alert type="error" v-for="error in value" :key="error" class="text-sm">
+                                {{ error }}
+                            </v-alert>
+                        </div>
+                    </v-col>
                     <v-col cols="9" sm="9">
                         <v-select
                             v-model="invoice.customer_id"
@@ -175,6 +182,7 @@
                     <v-col  cols="6">  
                         <v-textarea
                             label="Amount in words"
+                            v-model="invoice.amount_in_words"
                             auto-grow
                             rows="1"
                         />
@@ -227,6 +235,7 @@ export default {
                 sub_total: 0,
                 vat_amount: 0,
                 total: 0,
+                amount_in_words: null,
                 status: 'Draft'
             },
 
@@ -241,7 +250,9 @@ export default {
 
             invoiceStatus: ['Draft','Sent','Partial','Paid','Cancelled'],
             discountType: ['%','Amt'],
-            formTitle: 'Create Invoice'
+            formTitle: 'Create Invoice',
+            validationErrors: ''
+
          }
     },
 
@@ -323,7 +334,9 @@ export default {
                 })
                 .then(response => {
                 }).catch(error => {
-                    console.log(error);
+                    if (error.response.status == 422) {
+                        this.validationErrors = error.response.data.errors;
+                    }
                 });
         }
     }
